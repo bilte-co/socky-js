@@ -1,0 +1,6 @@
+[tools]
+bun = "1.2.19"
+
+[tasks.build]
+description = "Build the Socky JS api client"
+run = "bun build index.ts --outdir=dist --production --minify --target=browser --sourcemap"

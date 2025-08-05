@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    // Environment setup & latest features
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": false,
+    "esModuleInterop": true,
+    "outDir": "dist",
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "noEmit": false,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // set up absolute imports
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./*"],
+      "@lib/*": ["lib/*"],
+      "socky/types": ["types/index.ts"]
+    },
+    "typeRoots": ["types"]
+  },
+  "exclude": ["**/node_modules"]
+}
