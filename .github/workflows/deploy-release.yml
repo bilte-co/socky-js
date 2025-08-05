@@ -29,12 +29,11 @@ jobs:
 
       - name: Build project for CDN
         run: |
-          # Build minified version
-          bun build index.ts --outfile=dist/socky.min.js --production --minify --target=browser --format=iife --sourcemap
-          # Build unminified version
-          bun build index.ts --outfile=dist/socky.js --production --target=browser --format=iife --sourcemap
-          # Build ES module version
-          bun build index.ts --outfile=dist/socky.esm.js --production --target=browser --format=esm --sourcemap
+          mkdir -p dist
+          bun run build
+          mv socky.min.js* dist/
+          mv socky.js* dist/
+          mv socky.esm.js* dist/
 
       - name: Copy build to versioned structure for jsDelivr
         run: |

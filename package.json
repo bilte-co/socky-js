@@ -7,11 +7,11 @@
   "jsdelivr": "cdn/latest/socky.min.js",
   "scripts": {
     "build": "bun build:all",
-    "build:all": "bun build:min && bun build:dev && bun build:esm",
-    "build:min": "bun build index.ts --outfile=dist/socky.min.js --production --minify --target=browser --format=iife --sourcemap",
-    "build:dev": "bun build index.ts --outfile=dist/socky.js --target=browser --format=iife --sourcemap",
-    "build:esm": "bun build index.ts --outfile=dist/socky.esm.js --production --target=browser --format=esm --sourcemap",
-    "dev": "bun build index.ts --outfile=dist/socky.js --target=browser --format=iife --sourcemap --watch"
+    "build:all": "rm -rf dist && mkdir -p dist && bun build:min && bun build:dev && bun build:esm",
+    "build:min": "bun build index.ts --outfile=socky.min.js --production --minify --target=browser --format=iife --sourcemap && mv socky.min.js* dist/",
+    "build:dev": "bun build index.ts --outfile=socky.js --target=browser --format=iife --sourcemap && mv socky.js* dist/",
+    "build:esm": "bun build index.ts --outfile=socky.esm.js --production --target=browser --format=esm --sourcemap && mv socky.esm.js* dist/",
+    "dev": "mkdir -p dist && bun build index.ts --outfile=dist/socky.js --target=browser --format=iife --sourcemap --watch"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.3",
