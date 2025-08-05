@@ -9,6 +9,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     name: Build & Push to release branch
+    permissions:
+      contents: write # Allow actions to write to the repository
+      id-token: write # Required for GitHub Actions to authenticate with the repository
 
     steps:
       - name: Checkout source
