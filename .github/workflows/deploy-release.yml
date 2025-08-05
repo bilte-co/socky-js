@@ -9,9 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     name: Build & Push to release branch
-    permissions:
-      contents: write # Allow actions to write to the repository
-      id-token: write # Required for GitHub Actions to authenticate with the repository
 
     steps:
       - name: Checkout source
@@ -24,22 +21,32 @@ jobs:
         run: bun install
 
       - name: Build project
-        run: bun build index.ts --outdir=dist --production --minify --target=browser --format=iife --sourcemap
+        run: bun build index.ts --outdir=dist --production --minify --target=browser --sourcemap
 
-      - name: Deploy to release branch
+      - name: Get version from package.json
+        id: version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Copy build to versioned + latest folders
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "GitHub Actions"
+          mkdir -p out/dist/v${{ steps.version.outputs.VERSION }}
+          mkdir -p out/dist/latest
+          cp -r dist/* out/dist/v${{ steps.version.outputs.VERSION }}/
+          cp -r dist/* out/dist/latest/
 
-          # Create a temporary working directory
-          mkdir out
-          cp -r dist/* out/
+      - name: Push to release branch
+        run: |
           cd out
-
           git init
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "GitHub Actions"
           git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git checkout -b release
-
           git add .
-          git commit -m "Deploy from commit ${{ github.sha }}"
+          git commit -m "Deploy v${{ steps.version.outputs.VERSION }}"
           git push --force origin release
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
