@@ -24,7 +24,7 @@ jobs:
         run: bun install
 
       - name: Build project
-        run: bun build index.ts --outdir=dist --production --minify --target=browser --sourcemap
+        run: bun build index.ts --outdir=dist --production --minify --target=browser --format=iife --sourcemap
 
       - name: Deploy to release branch
         run: |
