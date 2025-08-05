@@ -34,7 +34,7 @@ jobs:
           cd out
 
           git init
-          git remote add origin https://github.com/${{ github.repository }}
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git checkout -b release
 
           git add .
