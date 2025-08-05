@@ -53,6 +53,8 @@ jobs:
           cp dist/socky.esm.js cdn/latest/
           cp dist/socky.esm.js.map cdn/latest/
 
+          rm -rf node_modules/
+
       - name: Create README for CDN usage
         run: |
           cat > cdn/README.md << 'EOF'
