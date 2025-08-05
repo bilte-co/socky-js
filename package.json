@@ -3,7 +3,7 @@
   "module": "index.ts",
   "types": "index.d.ts",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.4",
   "jsdelivr": "cdn/latest/socky.min.js",
   "scripts": {
     "build": "bun build:all",

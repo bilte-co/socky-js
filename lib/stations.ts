@@ -22,40 +22,46 @@ export function apiStations(request: typeof fetch) {
       cursor?: string,
       limit?: number,
     ): Promise<PaginatedResponse<Station>> {
+      const basePath = "/stations";
       const params = new URLSearchParams();
+
       if (cursor) params.set("cursor", cursor);
       if (limit) params.set("limit", limit.toString());
 
-      const res = await request("/stations", {
-        body: params,
-      });
+      const url = `${basePath}?${params.toString()}`;
+
+      const res = await request(url);
       if (!res.ok) throw new Error(`Failed to list stations`);
 
       return res.json();
     },
 
     async search(query: string): Promise<StationListResponse> {
+      const basePath = "/stations/search";
       const params = new URLSearchParams();
+
       if (query) params.set("q", query);
 
-      const res = await request("/stations/search", {
-        body: params,
-      });
+      const url = `${basePath}?${params.toString()}`;
+
+      const res = await request(url);
       if (!res.ok) throw new Error(`Failed to search stations`);
 
       return res.json();
     },
 
     async proximity(query: StationNearReq): Promise<StationListResponse> {
+      const basePath = "/stations/proximity";
       const params = new URLSearchParams();
+
       if (query.latitude) params.set("lat", query.latitude.toString());
       if (query.longitude) params.set("lng", query.longitude.toString());
       if (query.distance) params.set("distance", query.distance.toString());
       if (query.unit) params.set("unit", query.unit);
 
-      const res = await request("/stations/proximity", {
-        body: params,
-      });
+      const url = `${basePath}?${params.toString()}`;
+
+      const res = await request(url);
       if (!res.ok) throw new Error(`Failed to search nearby stations`);
 
       return res.json();
@@ -65,13 +71,14 @@ export function apiStations(request: typeof fetch) {
       code: string,
       query: StationNearReq,
     ): Promise<StationListResponse> {
+      const basePath = `/stations/${code}/near`;
       const params = new URLSearchParams();
+
       if (query.distance) params.set("distance", query.distance.toString());
       if (query.unit) params.set("unit", query.unit);
 
-      const res = await request(`/stations/${code}/near`, {
-        body: params,
-      });
+      const url = `${basePath}?${params.toString()}`;
+      const res = await request(url);
       if (!res.ok) throw new Error(`Failed to search stations`);
 
       return res.json();
