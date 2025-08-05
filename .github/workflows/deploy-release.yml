@@ -31,9 +31,6 @@ jobs:
         run: |
           mkdir -p dist
           bun run build
-          mv socky.min.js* dist/
-          mv socky.js* dist/
-          mv socky.esm.js* dist/
 
       - name: Copy build to versioned structure for jsDelivr
         run: |
