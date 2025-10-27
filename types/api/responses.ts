@@ -24,3 +24,9 @@ export type RouteInfoResponse = ApiResponse<{
   distance: RouteDistance;
   bearing: number;
 }>;
+
+export type PaginatedItems<T> = {
+  items: T[];
+  next_cursor?: string;
+  has_more: boolean;
+};

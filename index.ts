@@ -1,4 +1,7 @@
+import { apiAircraft } from "@lib/aircraft";
+import { apiFlights } from "@lib/flights";
 import { apiLocations } from "@lib/locations";
+import { apiPositions } from "@lib/positions";
 import { apiRoutes } from "@lib/routes";
 import { apiStations } from "@lib/stations";
 
@@ -10,7 +13,10 @@ export class Socky {
   private readonly version: string;
   private readonly request: typeof fetch;
 
+  public readonly aircraft: ReturnType<typeof apiAircraft>;
+  public readonly flights: ReturnType<typeof apiFlights>;
   public readonly locations: ReturnType<typeof apiLocations>;
+  public readonly positions: ReturnType<typeof apiPositions>;
   public readonly routes: ReturnType<typeof apiRoutes>;
   public readonly stations: ReturnType<typeof apiStations>;
 
@@ -41,7 +47,10 @@ export class Socky {
       });
     };
 
+    this.aircraft = apiAircraft(this.request);
+    this.flights = apiFlights(this.request);
     this.locations = apiLocations(this.request);
+    this.positions = apiPositions(this.request);
     this.routes = apiRoutes(this.request);
     this.stations = apiStations(this.request);
   }

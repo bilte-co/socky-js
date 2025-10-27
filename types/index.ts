@@ -7,7 +7,10 @@ export * from "./api/responses";
 export * from "./common/base";
 
 // Core
+export * from "./core/aircraft";
+export * from "./core/flight";
 export * from "./core/location";
+export * from "./core/position";
 export * from "./core/route";
 export * from "./core/runway";
 export * from "./core/station";
