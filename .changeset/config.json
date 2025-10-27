@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config/schema.json",
-  "changelog": "@changesets/changelog-github",
+  "changelog": ["@changesets/changelog-github", { "repo": "bilte-co/socky-js" }],
   "commit": false,
   "fixed": [],
   "linked": [],
