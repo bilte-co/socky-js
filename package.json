@@ -38,7 +38,6 @@
     "access": "public"
   },
   "scripts": {
-    "prepare": "pnpm -v > /dev/null",
     "clean": "rimraf dist",
     "build": "tsup",
     "dev": "tsup --watch",
