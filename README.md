@@ -5,8 +5,8 @@ JavaScript SDK for the Socky Flights API.
 ## Install
 
 ```sh
-pnpm add socky
-# or: npm i socky
+pnpm add @bilte-co/socky-js
+# or: npm i @bilte-co/socky-js
 ```
 
 ## Quickstart (ESM)
