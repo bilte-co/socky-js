@@ -1,0 +1,50 @@
+name: release
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: corepack enable
+      - run: corepack prepare pnpm@latest --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test --if-present
+
+      - name: Verify publish contents
+        run: |
+          npm pack --dry-run --silent | tail -n +1
+          tarball="$(npm pack --silent)"
+          echo "Tarball: $tarball"
+          tar -tf "$tarball" | sort
+
+      # If NPM_TOKEN is set (classic), authenticate explicitly; otherwise rely on Trusted Publishers OIDC.
+      - name: Configure npm auth (classic token fallback)
+        if: env.NPM_TOKEN != ''
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release PR or publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm -w changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

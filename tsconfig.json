@@ -1,40 +1,21 @@
 {
   "compilerOptions": {
-    // Environment setup & latest features
-    "lib": ["ESNext", "DOM"],
-    "target": "ESNext",
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM"],
     "module": "ESNext",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": false,
-    "esModuleInterop": true,
-    "outDir": "dist",
-
-    // Bundler mode
-    "moduleResolution": "bundler",
-    "verbatimModuleSyntax": true,
-    "noEmit": false,
-
-    // Best practices
+    "moduleResolution": "Bundler",
     "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "types": ["node"],
     "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-
-    // set up absolute imports
-    "baseUrl": "./",
+    "noEmit": true,
     "paths": {
-      "@/*": ["./*"],
-      "@lib/*": ["lib/*"],
-      "socky/types": ["types/index.ts"]
-    },
-    "typeRoots": ["types"]
+      "@lib/*": ["./lib/*"],
+      "socky/types": ["./types/index.ts"]
+    }
   },
-  "exclude": ["**/node_modules"]
+  "include": ["src", "lib", "types"]
 }
