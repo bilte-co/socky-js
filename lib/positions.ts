@@ -7,7 +7,7 @@ export function apiPositions(request: HttpRequest) {
 		async latest(
 			tails: string | string[],
 		): Promise<AircraftLastPositionResponse[]> {
-			const arr = Array.isArray(tails) ? tails : [tails];
+			const arr = Array.isArray(tails) ? tails : tails.split(",");
 			const tailsParam = encodeURIComponent(arr.join(","));
 
 			const res = await request(`/positions?tails=${tailsParam}`);
