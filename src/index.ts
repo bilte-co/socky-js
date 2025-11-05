@@ -42,7 +42,7 @@ export class Socky {
         ...(options.headers as Record<string, string> || {}),
       };
 
-      if (options.body) {
+      if (options.body && typeof options.body === "object") {
         headers["Content-Type"] = "application/json";
       }
 
