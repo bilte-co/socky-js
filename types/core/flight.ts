@@ -24,8 +24,6 @@ export type FlightResponse = {
   status: FlightStatus;
   origin_station_code?: string | null;
   destination_station_code?: string | null;
-  distance_meters?: number | null;
-  duration_seconds?: number | null;
 };
 
 export type FlightTrackResponse = {
