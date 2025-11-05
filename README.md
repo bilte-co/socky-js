@@ -1,6 +1,6 @@
 # socky
 
-JavaScript SDK for the Socky Flights API.
+JavaScript SDK for the public routes of the Socky Flights API.
 
 ## Install
 
@@ -14,6 +14,7 @@ pnpm add @bilte-co/socky-js
 ```js
 import { Socky } from 'socky';
 
+// Do not expose your APi key to the client.
 const client = new Socky({ apiKey: process.env.SOCKY_API_KEY! });
 
 // Get flight data
@@ -30,6 +31,7 @@ console.log(aircraft);
 ```js
 const { Socky } = require('socky');
 
+// Do not expose your APi key to the client.
 const client = new Socky({ apiKey: process.env.SOCKY_API_KEY });
 
 // Use the client as shown above

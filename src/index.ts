@@ -36,14 +36,19 @@ export class Socky {
     this.request = (path, options = {}) => {
       const url = new URL(`${this.baseUrl}${this.version}${path}`);
 
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
+        ...(options.headers || {}),
+      };
+
+      if (options.body) {
+        headers["Content-Type"] = "application/json";
+      }
+
       return fetch(url, {
         ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-          ...(options.headers || {}),
-        },
+        headers,
       });
     };
 
