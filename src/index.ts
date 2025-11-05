@@ -39,7 +39,7 @@ export class Socky {
       const headers: Record<string, string> = {
         Accept: "application/json",
         Authorization: `Bearer ${this.apiKey}`,
-        ...(options.headers || {}),
+        ...(options.headers as Record<string, string> || {}),
       };
 
       if (options.body) {
@@ -48,7 +48,7 @@ export class Socky {
 
       return fetch(url, {
         ...options,
-        headers,
+        headers: headers as HeadersInit,
       });
     };
 
