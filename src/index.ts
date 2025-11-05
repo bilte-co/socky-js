@@ -13,7 +13,7 @@ import { apiPositions } from "@lib/positions";
 import { apiRoutes } from "@lib/routes";
 import { apiStations } from "@lib/stations";
 
-import type { SockyOptions } from "socky/types";
+import type { SockyOptions } from "./types";
 
 const SDK_VERSION = "0.4.4";
 
@@ -123,4 +123,4 @@ export class Socky {
 }
 
 export { ApiError } from "@lib/error";
-export type { Page } from "socky/types";
+export * from "./types";
