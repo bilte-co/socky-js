@@ -1,5 +1,13 @@
 import { apiAircraft } from "@lib/aircraft";
 import { apiFlights } from "@lib/flights";
+import {
+	type HttpRequest,
+	delay,
+	isRetryableNetworkError,
+	jitterDelay,
+	shouldRetry,
+	toApiError,
+} from "@lib/http";
 import { apiLocations } from "@lib/locations";
 import { apiPositions } from "@lib/positions";
 import { apiRoutes } from "@lib/routes";
@@ -7,61 +15,112 @@ import { apiStations } from "@lib/stations";
 
 import type { SockyOptions } from "socky/types";
 
+const SDK_VERSION = "0.4.4";
+
 export class Socky {
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
-  private readonly version: string;
-  private readonly request: typeof fetch;
+	private readonly request: HttpRequest;
 
-  public readonly aircraft: ReturnType<typeof apiAircraft>;
-  public readonly flights: ReturnType<typeof apiFlights>;
-  public readonly locations: ReturnType<typeof apiLocations>;
-  public readonly positions: ReturnType<typeof apiPositions>;
-  public readonly routes: ReturnType<typeof apiRoutes>;
-  public readonly stations: ReturnType<typeof apiStations>;
+	public readonly aircraft: ReturnType<typeof apiAircraft>;
+	public readonly flights: ReturnType<typeof apiFlights>;
+	public readonly locations: ReturnType<typeof apiLocations>;
+	public readonly positions: ReturnType<typeof apiPositions>;
+	public readonly routes: ReturnType<typeof apiRoutes>;
+	public readonly stations: ReturnType<typeof apiStations>;
 
-  constructor(opts: SockyOptions) {
-    if (!opts.apiKey) {
-      throw new Error("API key is required");
-    }
-    this.apiKey = opts.apiKey;
+	constructor(opts: SockyOptions) {
+		if (!opts.apiKey) {
+			throw new Error("API key is required");
+		}
 
-    if (opts.baseUrl && !opts.baseUrl.endsWith("/")) {
-      opts.baseUrl += "/";
-    }
-    this.baseUrl = opts.baseUrl || "https://api.socky.flights/";
+		const baseUrl = opts.baseUrl?.endsWith("/")
+			? opts.baseUrl
+			: `${opts.baseUrl || "https://api.socky.flights"}/`;
+		const version = opts.version || "v1";
+		const fetchFn = opts.fetch || globalThis.fetch;
+		const defaultTimeout = opts.timeoutMs ?? 30_000;
+		const retries = opts.retries ?? 2;
+		const backoff = opts.retryBackoffMs ?? 250;
+		const allowOverrideAuth = opts.allowOverrideAuth ?? false;
 
-    this.version = opts.version || "v1";
+		const sdkUA = `socky-js/${SDK_VERSION}${opts.userAgent ? ` ${opts.userAgent}` : ""}`;
 
-    this.request = (path, options = {}) => {
-      const url = new URL(`${this.baseUrl}${this.version}${path}`);
+		this.request = async (path, init = {}) => {
+			const url = new URL(`${baseUrl}${version}${path}`);
 
-      const headers: Record<string, string> = {
-        Accept: "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-        ...(options.headers as Record<string, string> || {}),
-      };
+			const headers = new Headers(init.headers ?? {});
+			headers.set("Accept", "application/json");
+			headers.set("X-Socky-SDK", sdkUA);
 
-      if (options.body && typeof options.body === "object") {
-        headers["Content-Type"] = "application/json";
-      }
+			if (!allowOverrideAuth || !headers.has("Authorization")) {
+				headers.set("Authorization", `Bearer ${opts.apiKey}`);
+			}
 
-      return fetch(url, {
-        ...options,
-        headers: headers as HeadersInit,
-      });
-    };
+			let body = init.body;
+			if (
+				body != null &&
+				!(body instanceof FormData) &&
+				!(body instanceof URLSearchParams) &&
+				typeof body === "object"
+			) {
+				headers.set("Content-Type", "application/json");
+				body = JSON.stringify(body);
+			}
 
-    this.aircraft = apiAircraft(this.request);
-    this.flights = apiFlights(this.request);
-    this.locations = apiLocations(this.request);
-    this.positions = apiPositions(this.request);
-    this.routes = apiRoutes(this.request);
-    this.stations = apiStations(this.request);
-  }
+			const controller = new AbortController();
+			const timeout = setTimeout(
+				() => controller.abort(),
+				init.timeoutMs ?? defaultTimeout,
+			);
+
+			let attempt = 0;
+			let lastErr: unknown;
+
+			try {
+				while (true) {
+					try {
+						const res = await fetchFn(url.toString(), {
+							...init,
+							body,
+							headers,
+							signal: init.signal ?? controller.signal,
+						});
+
+						if (res.ok) return res;
+
+						const apiError = await toApiError(url.toString(), res);
+
+						if (shouldRetry(res) && attempt < retries) {
+							await delay(jitterDelay(backoff, attempt, apiError.retryAfterMs));
+							attempt++;
+							continue;
+						}
+
+						throw apiError;
+					} catch (err) {
+						lastErr = err;
+
+						if (attempt < retries && isRetryableNetworkError(err)) {
+							await delay(jitterDelay(backoff, attempt));
+							attempt++;
+							continue;
+						}
+
+						throw err;
+					}
+				}
+			} finally {
+				clearTimeout(timeout);
+			}
+		};
+
+		this.aircraft = apiAircraft(this.request);
+		this.flights = apiFlights(this.request);
+		this.locations = apiLocations(this.request);
+		this.positions = apiPositions(this.request);
+		this.routes = apiRoutes(this.request);
+		this.stations = apiStations(this.request);
+	}
 }
 
-if (typeof window !== "undefined") {
-  // biome-ignore lint/suspicious/noExplicitAny: Allow global access to Socky
-  (window as any).Socky = Socky;
-}
+export { ApiError } from "@lib/error";
+export type { Page } from "socky/types";

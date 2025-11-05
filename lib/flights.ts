@@ -1,21 +1,17 @@
+import type { HttpRequest } from "@lib/http";
+import { parseJson } from "@lib/http";
 import type { FlightResponse, FlightTrackResponse } from "socky/types";
 
-export function apiFlights(request: typeof fetch) {
-  return {
-    async get(ulid: string): Promise<FlightResponse> {
-      const res = await request(`/flights/${ulid}`);
-      if (!res.ok)
-        throw new Error(`Failed to fetch flight: ${res.statusText}`);
+export function apiFlights(request: HttpRequest) {
+	return {
+		async get(ulid: string): Promise<FlightResponse> {
+			const res = await request(`/flights/${encodeURIComponent(ulid)}`);
+			return parseJson<FlightResponse>(res);
+		},
 
-      return res.json();
-    },
-
-    async track(ulid: string): Promise<FlightTrackResponse> {
-      const res = await request(`/flights/${ulid}/track`);
-      if (!res.ok)
-        throw new Error(`Failed to fetch flight track: ${res.statusText}`);
-
-      return res.json();
-    },
-  };
+		async track(ulid: string): Promise<FlightTrackResponse> {
+			const res = await request(`/flights/${encodeURIComponent(ulid)}/track`);
+			return parseJson<FlightTrackResponse>(res);
+		},
+	};
 }

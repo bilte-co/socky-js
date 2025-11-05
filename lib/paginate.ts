@@ -1,22 +1,44 @@
-import type { PaginatedResponse } from "socky/types";
+import type { Page } from "socky/types";
 
-export async function* paginate<T>(
-  fetchPage: (cursor?: string, limit?: number) => Promise<PaginatedResponse<T>>,
-  pageLimit?: number,
-): AsyncGenerator<T[], void, unknown> {
-  let cursor: string | undefined;
-  const limit: number | undefined = 20;
-  let pageCount = 0;
+export async function* paginatePages<T>(
+	fetchPage: (cursor?: string) => Promise<Page<T>>,
+	pageLimit?: number,
+): AsyncGenerator<Page<T>, void, unknown> {
+	let cursor: string | undefined;
+	let pageCount = 0;
 
-  while (true) {
-    const page = await fetchPage(cursor, limit);
-    yield page.data;
+	while (true) {
+		const page = await fetchPage(cursor);
+		yield page;
 
-    cursor = page.next_cursor;
-    pageCount++;
+		cursor = page.nextCursor;
+		pageCount++;
 
-    if (!cursor || (pageLimit && pageCount >= pageLimit)) {
-      break;
-    }
-  }
+		if (!page.hasMore || !cursor || (pageLimit && pageCount >= pageLimit)) {
+			break;
+		}
+	}
+}
+
+export async function* paginateItems<T>(
+	fetchPage: (cursor?: string) => Promise<Page<T>>,
+	pageLimit?: number,
+): AsyncGenerator<T, void, unknown> {
+	let cursor: string | undefined;
+	let pageCount = 0;
+
+	while (true) {
+		const page = await fetchPage(cursor);
+
+		for (const item of page.items) {
+			yield item;
+		}
+
+		cursor = page.nextCursor;
+		pageCount++;
+
+		if (!page.hasMore || !cursor || (pageLimit && pageCount >= pageLimit)) {
+			break;
+		}
+	}
 }

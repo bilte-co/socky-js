@@ -1,59 +1,70 @@
+import type { HttpRequest } from "@lib/http";
+import { addIfDefined, parseJson } from "@lib/http";
 import type {
-  Aircraft,
-  AircraftLastPositionResponse,
-  FlightResponse,
-  PaginatedItems,
+	Aircraft,
+	AircraftLastPositionResponse,
+	FlightResponse,
+	Page,
 } from "socky/types";
 
-export function apiAircraft(request: typeof fetch) {
-  return {
-    async list(
-      cursor?: string,
-      limit?: number,
-    ): Promise<PaginatedItems<Aircraft>> {
-      const params = new URLSearchParams();
-      if (cursor) params.set("cursor", cursor);
-      if (limit) params.set("limit", limit.toString());
+export function apiAircraft(request: HttpRequest) {
+	return {
+		async list(cursor?: string, limit?: number): Promise<Page<Aircraft>> {
+			const params = new URLSearchParams();
+			addIfDefined(params, "cursor", cursor);
+			addIfDefined(params, "limit", limit);
 
-      const url = `/aircraft?${params.toString()}`;
-      const res = await request(url);
-      if (!res.ok) throw new Error("Failed to list aircraft");
+			const url = `/aircraft?${params.toString()}`;
+			const res = await request(url);
+			const data = await parseJson<{
+				items: Aircraft[];
+				next_cursor?: string;
+				has_more?: boolean;
+			}>(res);
 
-      return res.json();
-    },
+			return {
+				items: data.items,
+				nextCursor: data.next_cursor,
+				hasMore: data.has_more ?? Boolean(data.next_cursor),
+			};
+		},
 
-    async get(registration: string): Promise<Aircraft> {
-      const res = await request(`/aircraft/${registration}`);
-      if (!res.ok)
-        throw new Error(`Failed to fetch aircraft: ${res.statusText}`);
+		async get(registration: string): Promise<Aircraft> {
+			const res = await request(`/aircraft/${encodeURIComponent(registration)}`);
+			return parseJson<Aircraft>(res);
+		},
 
-      return res.json();
-    },
+		async position(
+			registration: string,
+		): Promise<AircraftLastPositionResponse> {
+			const res = await request(
+				`/aircraft/${encodeURIComponent(registration)}/position`,
+			);
+			return parseJson<AircraftLastPositionResponse>(res);
+		},
 
-    async position(
-      registration: string,
-    ): Promise<AircraftLastPositionResponse> {
-      const res = await request(`/aircraft/${registration}/position`);
-      if (!res.ok)
-        throw new Error(`Failed to fetch aircraft position: ${res.statusText}`);
+		async flights(
+			registration: string,
+			cursor?: string,
+			limit?: number,
+		): Promise<Page<FlightResponse>> {
+			const params = new URLSearchParams();
+			addIfDefined(params, "cursor", cursor);
+			addIfDefined(params, "limit", limit);
 
-      return res.json();
-    },
+			const url = `/aircraft/${encodeURIComponent(registration)}/flights?${params.toString()}`;
+			const res = await request(url);
+			const data = await parseJson<{
+				items: FlightResponse[];
+				next_cursor?: string;
+				has_more?: boolean;
+			}>(res);
 
-    async flights(
-      registration: string,
-      cursor?: string,
-      limit?: number,
-    ): Promise<PaginatedItems<FlightResponse>> {
-      const params = new URLSearchParams();
-      if (cursor) params.set("cursor", cursor);
-      if (limit) params.set("limit", limit.toString());
-
-      const url = `/aircraft/${registration}/flights?${params.toString()}`;
-      const res = await request(url);
-      if (!res.ok) throw new Error("Failed to fetch aircraft flights");
-
-      return res.json();
-    },
-  };
+			return {
+				items: data.items,
+				nextCursor: data.next_cursor,
+				hasMore: data.has_more ?? Boolean(data.next_cursor),
+			};
+		},
+	};
 }

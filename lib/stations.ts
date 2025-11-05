@@ -1,94 +1,92 @@
-import { paginate } from "@lib/paginate";
+import type { HttpRequest } from "@lib/http";
+import { addIfDefined, parseJson } from "@lib/http";
+import { paginateItems, paginatePages } from "@lib/paginate";
 
 import type {
-  PaginatedResponse,
-  Station,
-  StationInfoResponse,
-  StationListResponse,
-  StationNearReq,
+	Page,
+	Station,
+	StationInfoResponse,
+	StationListResponse,
+	StationNearReq,
 } from "socky/types";
 
-export function apiStations(request: typeof fetch) {
-  return {
-    async get(code: string): Promise<StationInfoResponse> {
-      const res = await request(`/stations/${code}`);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch station info: ${res.statusText}`);
-      }
-      return res.json();
-    },
+export function apiStations(request: HttpRequest) {
+	return {
+		async get(code: string): Promise<StationInfoResponse> {
+			const res = await request(`/stations/${encodeURIComponent(code)}`);
+			return parseJson<StationInfoResponse>(res);
+		},
 
-    async list(
-      cursor?: string,
-      limit?: number,
-    ): Promise<PaginatedResponse<Station>> {
-      const basePath = "/stations";
-      const params = new URLSearchParams();
+		async list(cursor?: string, limit?: number): Promise<Page<Station>> {
+			const params = new URLSearchParams();
+			addIfDefined(params, "cursor", cursor);
+			addIfDefined(params, "limit", limit);
 
-      if (cursor) params.set("cursor", cursor);
-      if (limit) params.set("limit", limit.toString());
+			const url = `/stations?${params.toString()}`;
+			const res = await request(url);
+			const data = await parseJson<{
+				data: Station[];
+				next_cursor?: string;
+				has_more?: boolean;
+			}>(res);
 
-      const url = `${basePath}?${params.toString()}`;
+			return {
+				items: data.data,
+				nextCursor: data.next_cursor,
+				hasMore: data.has_more ?? Boolean(data.next_cursor),
+			};
+		},
 
-      const res = await request(url);
-      if (!res.ok) throw new Error(`Failed to list stations`);
+		async search(query: string): Promise<StationListResponse> {
+			const params = new URLSearchParams();
+			addIfDefined(params, "q", query);
 
-      return res.json();
-    },
+			const url = `/stations/search?${params.toString()}`;
+			const res = await request(url);
+			return parseJson<StationListResponse>(res);
+		},
 
-    async search(query: string): Promise<StationListResponse> {
-      const basePath = "/stations/search";
-      const params = new URLSearchParams();
+		async proximity(query: StationNearReq): Promise<StationListResponse> {
+			const params = new URLSearchParams();
+			addIfDefined(params, "lat", query.latitude);
+			addIfDefined(params, "lng", query.longitude);
+			addIfDefined(params, "distance", query.distance);
+			addIfDefined(params, "unit", query.unit);
 
-      if (query) params.set("q", query);
+			const url = `/stations/proximity?${params.toString()}`;
+			const res = await request(url);
+			return parseJson<StationListResponse>(res);
+		},
 
-      const url = `${basePath}?${params.toString()}`;
+		async near(
+			code: string,
+			query: StationNearReq,
+		): Promise<StationListResponse> {
+			const params = new URLSearchParams();
+			addIfDefined(params, "distance", query.distance);
+			addIfDefined(params, "unit", query.unit);
 
-      const res = await request(url);
-      if (!res.ok) throw new Error(`Failed to search stations`);
+			const url = `/stations/${encodeURIComponent(code)}/near?${params.toString()}`;
+			const res = await request(url);
+			return parseJson<StationListResponse>(res);
+		},
 
-      return res.json();
-    },
+		paginatePages(limit?: number, pageLimit?: number) {
+			return paginatePages<Station>(
+				async (cursor?: string) => {
+					return apiStations(request).list(cursor, limit);
+				},
+				pageLimit,
+			);
+		},
 
-    async proximity(query: StationNearReq): Promise<StationListResponse> {
-      const basePath = "/stations/proximity";
-      const params = new URLSearchParams();
-
-      if (query.latitude) params.set("lat", query.latitude.toString());
-      if (query.longitude) params.set("lng", query.longitude.toString());
-      if (query.distance) params.set("distance", query.distance.toString());
-      if (query.unit) params.set("unit", query.unit);
-
-      const url = `${basePath}?${params.toString()}`;
-
-      const res = await request(url);
-      if (!res.ok) throw new Error(`Failed to search nearby stations`);
-
-      return res.json();
-    },
-
-    async near(
-      code: string,
-      query: StationNearReq,
-    ): Promise<StationListResponse> {
-      const basePath = `/stations/${code}/near`;
-      const params = new URLSearchParams();
-
-      if (query.distance) params.set("distance", query.distance.toString());
-      if (query.unit) params.set("unit", query.unit);
-
-      const url = `${basePath}?${params.toString()}`;
-      const res = await request(url);
-      if (!res.ok) throw new Error(`Failed to search stations`);
-
-      return res.json();
-    },
-
-    paginate: (request: typeof fetch) =>
-      paginate<Station>(
-        (cursor?: string | undefined, limit?: number | undefined) => {
-          return apiStations(request).list(cursor, limit); // call list repeatedly
-        },
-      ),
-  };
+		paginateItems(limit?: number, pageLimit?: number) {
+			return paginateItems<Station>(
+				async (cursor?: string) => {
+					return apiStations(request).list(cursor, limit);
+				},
+				pageLimit,
+			);
+		},
+	};
 }
