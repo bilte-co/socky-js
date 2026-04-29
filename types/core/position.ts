@@ -1,10 +1,10 @@
 export type Position = {
+  ulid: string;
+  aircraft_reg: string;
   altitude: number;
-  altitude_change: string;
   groundspeed: number;
   heading: number;
   latitude: number;
   longitude: number;
   timestamp: string;
-  update_type: string;
 };

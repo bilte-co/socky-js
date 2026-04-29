@@ -4,7 +4,7 @@ export type Station = {
   id: string;
   iata: string;
   icao: string;
-  fa_code: string;
+  code: string;
   gps_code: string;
   local_code: string;
   name: string;
