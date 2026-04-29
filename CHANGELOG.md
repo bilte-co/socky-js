@@ -1,5 +1,11 @@
 # @bilte-co/socky
 
+## 0.5.4
+
+### Patch Changes
+
+- [`767dbe7`](https://github.com/bilte-co/socky-js/commit/767dbe7ecc33d9299fa285acd863c50402763798) Thanks [@inghamemerson](https://github.com/inghamemerson)! - Properly align type naming
+
 ## 0.4.0
 
 ### Minor Changes
