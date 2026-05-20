@@ -6,8 +6,11 @@ on:
 permissions:
   contents: write
   id-token: write
-  packages: write
   pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -17,11 +20,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24.15.0
           registry-url: 'https://registry.npmjs.org'
 
+      - run: npm install -g npm@11.14.1
       - run: corepack enable
-      - run: corepack prepare pnpm@latest --activate
+      - run: corepack prepare pnpm@11.1.3 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm typecheck
@@ -34,18 +38,9 @@ jobs:
           echo "Tarball: $tarball"
           tar -tf "$tarball" | sort
 
-      # If NPM_TOKEN is set (classic), authenticate explicitly; otherwise rely on Trusted Publishers OIDC.
-      - name: Configure npm auth (classic token fallback)
-        if: env.NPM_TOKEN != ''
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
           publish: pnpm changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true

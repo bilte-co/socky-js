@@ -45,12 +45,31 @@ export function apiAircraft(request: HttpRequest) {
 
 		async flights(
 			registration: string,
-			cursor?: string,
-			limit?: number,
+			options: {
+				cursor?: string;
+				limit?: number;
+				start?: string;
+				end?: string;
+				origin?: string;
+				destination?: string;
+			} = {},
 		): Promise<Page<FlightResponse>> {
+			const { cursor, limit, start, end, origin, destination } = options;
 			const params = new URLSearchParams();
 			addIfDefined(params, "cursor", cursor);
 			addIfDefined(params, "limit", limit);
+			addIfDefined(params, "start", start);
+			addIfDefined(params, "end", end);
+			addIfDefined(
+				params,
+				"origin",
+				origin ? origin.trim().toUpperCase() : undefined,
+			);
+			addIfDefined(
+				params,
+				"destination",
+				destination ? destination.trim().toUpperCase() : undefined,
+			);
 
 			const url = `/aircraft/${encodeURIComponent(registration)}/flights?${params.toString()}`;
 			const res = await request(url);
