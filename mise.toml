@@ -1,6 +1,7 @@
 [tools]
 node = "24.15.0"
 npm = "11.14.1"
+pnpm = "latest"
 aube = "1.15.0"
 hk = "latest"
 
