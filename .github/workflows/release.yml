@@ -27,6 +27,15 @@ jobs:
         with:
           experimental: true
 
+      # Install pnpm onto the runner PATH so changesets' publish step
+      # (which spawns `pnpm publish` directly when it sees pnpm-lock.yaml)
+      # can find it. aube exec runs commands in a lifecycle-script jail
+      # that doesn't expose the mise shims dir, so we need pnpm in a
+      # globally visible location.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
       - run: aube ci
       - run: aubr build
       - run: aubr typecheck
@@ -42,6 +51,8 @@ jobs:
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          publish: aube exec changeset publish
+          # Invoke changeset directly via pnpm so we bypass aube's
+          # lifecycle-script jail entirely.
+          publish: pnpm exec changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
