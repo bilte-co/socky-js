@@ -1,2 +1,9 @@
 [tools]
-bun = "1.2.19"
+node = "24.15.0"
+npm = "11.14.1"
+aube = "1.15.0"
+hk = "latest"
+
+[env]
+# Use hk's built-in Rust pkl evaluator so the pkl CLI is not required
+HK_PKL_BACKEND = "pklr"

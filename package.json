@@ -4,6 +4,7 @@
   "description": "JavaScript SDK for the Socky Flights API",
   "license": "Apache-2.0",
   "type": "module",
+  "packageManager": "aube@1.15.0",
   "private": false,
   "sideEffects": false,
   "engines": {
@@ -35,16 +36,16 @@
     "LICENSE"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm clean && pnpm build && pnpm typecheck",
-    "release": "changeset version && pnpm install --no-frozen-lockfile && changeset publish",
+    "prepack": "aubr clean && aubr build && aubr typecheck",
     "changeset": "changeset",
     "test": "echo \"(no tests yet)\""
   },
