@@ -1,5 +1,11 @@
 # @bilte-co/socky
 
+## 0.6.0
+
+### Minor Changes
+
+- [#3](https://github.com/bilte-co/socky-js/pull/3) [`cbb8672`](https://github.com/bilte-co/socky-js/commit/cbb8672afc60781ae375cc86e52b72bebdcded0b) Thanks [@inghamemerson](https://github.com/inghamemerson)! - Update aircraft flights endpoint to match api with additional query params
+
 ## 0.5.4
 
 ### Patch Changes
