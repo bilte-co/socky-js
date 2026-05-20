@@ -73,7 +73,6 @@ export class Socky {
 			);
 
 			let attempt = 0;
-			let lastErr: unknown;
 
 			try {
 				while (true) {
@@ -97,8 +96,6 @@ export class Socky {
 
 						throw apiError;
 					} catch (err) {
-						lastErr = err;
-
 						if (attempt < retries && isRetryableNetworkError(err)) {
 							await delay(jitterDelay(backoff, attempt));
 							attempt++;
