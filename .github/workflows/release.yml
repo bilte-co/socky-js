@@ -60,5 +60,10 @@ jobs:
           # package.json sets `packageManager: aube@...`; pnpm would
           # otherwise refuse to run. aube is pnpm-lockfile compatible,
           # so it's safe to let pnpm execute here.
-          COREPACK_ENABLE_STRICT: "0"
+          # pnpm 11+ uses `pmOnFail`; older releases used the two
+          # settings below. We set all three so the workflow works
+          # across pnpm versions.
+          pnpm_config_pm_on_fail: ignore
+          npm_config_pm_on_fail: ignore
           npm_config_package_manager_strict: "false"
+          COREPACK_ENABLE_STRICT: "0"
