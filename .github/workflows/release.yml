@@ -52,9 +52,15 @@ jobs:
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          # Invoke changeset directly via pnpm so we bypass aube's
-          # lifecycle-script jail entirely.
-          publish: pnpm exec changeset publish
+          # Call the changeset binary directly. Going through
+          # `aube exec` hits aube's lifecycle-script jail (no pnpm
+          # on PATH); going through `pnpm exec` triggers pnpm 11's
+          # verifyDepsBeforeRun which forces a re-install that fails
+          # on aube's node_modules layout. Calling the bin directly
+          # avoids both. `changeset publish` still spawns
+          # `pnpm publish` internally, which is fine because
+          # verifyDepsBeforeRun only applies to `pnpm exec`/`pnpm run`.
+          publish: ./node_modules/.bin/changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # package.json sets `packageManager: aube@...`; pnpm would
