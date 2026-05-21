@@ -5,7 +5,7 @@ JavaScript SDK for the public routes of the Socky Flights API.
 ## Install
 
 ```sh
-pnpm add @bilte-co/socky-js
+aube add @bilte-co/socky-js
 # or: npm i @bilte-co/socky-js
 ```
 

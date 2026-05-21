@@ -28,15 +28,6 @@ jobs:
         with:
           experimental: true
 
-      # Install pnpm onto the runner PATH so changesets' publish step
-      # (which spawns `pnpm publish` directly when it sees pnpm-lock.yaml)
-      # can find it. aube exec runs commands in a lifecycle-script jail
-      # that doesn't expose the mise shims dir, so we need pnpm in a
-      # globally visible location.
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
       - run: aube ci
       - run: aubr build
       - run: aubr typecheck
@@ -52,24 +43,12 @@ jobs:
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          # Call the changeset binary directly. Going through
-          # `aube exec` hits aube's lifecycle-script jail (no pnpm
-          # on PATH); going through `pnpm exec` triggers pnpm 11's
-          # verifyDepsBeforeRun which forces a re-install that fails
-          # on aube's node_modules layout. Calling the bin directly
-          # avoids both. `changeset publish` still spawns
-          # `pnpm publish` internally, which is fine because
-          # verifyDepsBeforeRun only applies to `pnpm exec`/`pnpm run`.
+          # Call the changeset binary directly. Going through `aube exec`
+          # hits aube's lifecycle-script jail, which doesn't expose the
+          # mise shims dir. Calling the bin directly sidesteps that.
+          # With only aube-lock.yaml in the repo, changesets'
+          # package-manager-detector won't see pnpm and will fall back
+          # to spawning `npm publish` internally, which is what we want.
           publish: ./node_modules/.bin/changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # package.json sets `packageManager: aube@...`; pnpm would
-          # otherwise refuse to run. aube is pnpm-lockfile compatible,
-          # so it's safe to let pnpm execute here.
-          # pnpm 11+ uses `pmOnFail`; older releases used the two
-          # settings below. We set all three so the workflow works
-          # across pnpm versions.
-          pnpm_config_pm_on_fail: ignore
-          npm_config_pm_on_fail: ignore
-          npm_config_package_manager_strict: "false"
-          COREPACK_ENABLE_STRICT: "0"
