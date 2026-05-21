@@ -1,5 +1,11 @@
 # @bilte-co/socky
 
+## 0.6.2
+
+### Patch Changes
+
+- [#5](https://github.com/bilte-co/socky-js/pull/5) [`6273374`](https://github.com/bilte-co/socky-js/commit/6273374e9d2c4c74f22e7cda8c5dda1c50333ecc) Thanks [@inghamemerson](https://github.com/inghamemerson)! - Version bump deps to stable
+
 ## 0.6.0
 
 ### Minor Changes
