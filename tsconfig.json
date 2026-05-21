@@ -12,6 +12,7 @@
     "types": ["node"],
     "skipLibCheck": true,
     "noEmit": true,
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@lib/*": ["./lib/*"],
       "socky/types": ["./types/index.ts"]
